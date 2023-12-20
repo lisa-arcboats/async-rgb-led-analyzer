@@ -15,13 +15,14 @@ AsyncRgbLedAnalyzerResults::~AsyncRgbLedAnalyzerResults()
 }
 
 void AsyncRgbLedAnalyzerResults::GenerateRGBStrings( const RGBValue& rgb, DisplayBase base, size_t bufSize, char* redBuf, char* greenBuff,
-                                                     char* blueBuf )
+                                                     char* blueBuf, char* whiteBuf )
 {
     // generate a numerical representation of each color channel,
     // respecting the display-base setting
     AnalyzerHelpers::GetNumberString( rgb.red, base, mSettings->BitSize(), redBuf, bufSize );
     AnalyzerHelpers::GetNumberString( rgb.green, base, mSettings->BitSize(), greenBuff, bufSize );
     AnalyzerHelpers::GetNumberString( rgb.blue, base, mSettings->BitSize(), blueBuf, bufSize );
+    AnalyzerHelpers::GetNumberString( rgb.white, base, mSettings->BitSize(), whiteBuf, bufSize );
 }
 
 void AsyncRgbLedAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& channel, DisplayBase display_base )
@@ -33,34 +34,56 @@ void AsyncRgbLedAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& c
     RGBValue rgb = RGBValue::CreateFromU64( frame.mData1 );
 
     // generate a Web/CSS representation of the color value
-    U8 webColor[ 3 ];
+    U8 webColor[ 4 ];
     rgb.ConvertTo8Bit( mSettings->BitSize(), webColor );
-    char webBuf[ 8 ];
-    ::snprintf( webBuf, sizeof( webBuf ), "#%02x%02x%02x", webColor[ 0 ], webColor[ 1 ], webColor[ 2 ] );
+    char webBuf[ 10 ];
 
     const int colorNumericBufferLength = 16;
-    char redString[ colorNumericBufferLength ], greenString[ colorNumericBufferLength ], blueString[ colorNumericBufferLength ];
-
-    GenerateRGBStrings( rgb, display_base, colorNumericBufferLength, redString, greenString, blueString );
+    char redString[ colorNumericBufferLength ], greenString[ colorNumericBufferLength ], blueString[ colorNumericBufferLength ], whiteString[ colorNumericBufferLength ];
+    GenerateRGBStrings( rgb, display_base, colorNumericBufferLength, redString, greenString, blueString, whiteString );
 
     // generate four different string variants of varying length, starting with
     // the longest and decreasing in size
     char buf[ 256 ];
 
-    // example: LED: 13 Red: 0x1A Green: 0x2B Blue: 0x3C #1A2B3C
-    ::snprintf( buf, sizeof( buf ), "LED %d Red: %s Green: %s Blue: %s %s", ledIndex, redString, greenString, blueString, webBuf );
-    AddResultString( buf );
-
-    // example: 13 R:0x1A G:0x2B B:0x3C #1A2B3C
-    ::snprintf( buf, sizeof( buf ), "%d R: %s G: %s B: %s %s", ledIndex, redString, greenString, blueString, webBuf );
-    AddResultString( buf );
-
-    // example: (13) #1A2B3C
-    ::snprintf( buf, sizeof( buf ), "(%d) %s", ledIndex, webBuf );
-    AddResultString( buf );
-
-    // example: #1A2B3C
-    AddResultString( webBuf );
+    if( mSettings->GetColorLayout() == LAYOUT_GRBW )
+    {
+        ::snprintf( webBuf, sizeof( webBuf ), "#%02x%02x%02x%02x", webColor[ 0 ], webColor[ 1 ], webColor[ 2 ], webColor[ 3 ] );
+        
+        // example: LED: 13 Red: 0x1A Green: 0x2B Blue: 0x3C White: 0x4D #1A2B3C4D
+        ::snprintf( buf, sizeof( buf ), "LED %d Red: %s Green: %s Blue: %s White:%s %s", ledIndex, redString, greenString, blueString, whiteString, webBuf );
+        AddResultString( buf );
+    
+        // example: 13 R:0x1A G:0x2B B:0x3C W:0x4D #1A2B3C4D
+        ::snprintf( buf, sizeof( buf ), "%d R: %s G: %s B: %s W: %s %s", ledIndex, redString, greenString, blueString, whiteString, webBuf );
+        AddResultString( buf );
+    
+        // example: (13) #1A2B3C4D
+        ::snprintf( buf, sizeof( buf ), "(%d) %s", ledIndex, webBuf );
+        AddResultString( buf );
+    
+        // example: #1A2B3C4D
+        AddResultString( webBuf );
+    }
+    else
+    {
+        ::snprintf( webBuf, sizeof( webBuf ), "#%02x%02x%02x", webColor[ 0 ], webColor[ 1 ], webColor[ 2 ] );
+        
+        // example: LED: 13 Red: 0x1A Green: 0x2B Blue: 0x3C #1A2B3C
+        ::snprintf( buf, sizeof( buf ), "LED %d Red: %s Green: %s Blue: %s %s", ledIndex, redString, greenString, blueString, webBuf );
+        AddResultString( buf );
+    
+        // example: 13 R:0x1A G:0x2B B:0x3C #1A2B3C
+        ::snprintf( buf, sizeof( buf ), "%d R: %s G: %s B: %s %s", ledIndex, redString, greenString, blueString, webBuf );
+        AddResultString( buf );
+    
+        // example: (13) #1A2B3C
+        ::snprintf( buf, sizeof( buf ), "(%d) %s", ledIndex, webBuf );
+        AddResultString( buf );
+    
+        // example: #1A2B3C
+        AddResultString( webBuf );
+    }
 }
 
 void AsyncRgbLedAnalyzerResults::GenerateExportFile( const char* file, DisplayBase display_base, U32 export_type_user_id )
@@ -70,7 +93,14 @@ void AsyncRgbLedAnalyzerResults::GenerateExportFile( const char* file, DisplayBa
     U64 trigger_sample = mAnalyzer->GetTriggerSample();
     U32 sample_rate = mAnalyzer->GetSampleRate();
 
-    file_stream << "Time [s], Packet ID, LED Index, Red, Green, Blue, Web-CSS" << std::endl;
+    if( mSettings->GetColorLayout() == LAYOUT_GRBW )
+    {
+        file_stream << "Time [s], Packet ID, LED Index, Red, Green, Blue, White, Web-CSS" << std::endl;
+    }
+    else
+    {
+        file_stream << "Time [s], Packet ID, LED Index, Red, Green, Blue, Web-CSS" << std::endl;
+    }
 
     const U64 num_frames = GetNumFrames();
 
@@ -91,17 +121,25 @@ void AsyncRgbLedAnalyzerResults::GenerateExportFile( const char* file, DisplayBa
 
         // RGB numerical value representation
         const size_t bufSize = 16;
-        char rs[ bufSize ], gs[ bufSize ], bs[ bufSize ];
-        GenerateRGBStrings( rgb, display_base, bufSize, rs, gs, bs );
+        char rs[ bufSize ], gs[ bufSize ], bs[ bufSize ], ws[ bufSize ];
+        GenerateRGBStrings( rgb, display_base, bufSize, rs, gs, bs, ws );
 
         // CSS representation
-        U8 webColor[ 3 ];
+        U8 webColor[ 4 ];
         rgb.ConvertTo8Bit( mSettings->BitSize(), webColor );
-        char webBuf[ 8 ];
-        ::snprintf( webBuf, sizeof( webBuf ), "#%02x%02x%02x", webColor[ 0 ], webColor[ 1 ], webColor[ 2 ] );
-
-        file_stream << time_str << "," << packetId << "," << frame.mData2 << "," << rs << "," << gs << "," << bs << "," << webBuf
+        char webBuf[ 10 ];
+        if( mSettings->GetColorLayout() == LAYOUT_GRBW )
+        {
+            ::snprintf( webBuf, sizeof( webBuf ), "#%02x%02x%02x%02x", webColor[ 0 ], webColor[ 1 ], webColor[ 2 ], webColor[ 3 ] );
+            file_stream << time_str << "," << packetId << "," << frame.mData2 << "," << rs << "," << gs << "," << bs << "," << ws << "," << webBuf
                     << std::endl;
+        }
+        else
+        {
+            ::snprintf( webBuf, sizeof( webBuf ), "#%02x%02x%02x", webColor[ 0 ], webColor[ 1 ], webColor[ 2 ] );
+            file_stream << time_str << "," << packetId << "," << frame.mData2 << "," << rs << "," << gs << "," << bs << "," << webBuf
+                        << std::endl;
+        }
 
         if( UpdateExportProgressAndCheckForCancel( i, num_frames ) == true )
         {
@@ -123,13 +161,21 @@ void AsyncRgbLedAnalyzerResults::GenerateFrameTabularText( U64 frame_index, Disp
     const RGBValue rgb = RGBValue::CreateFromU64( frame.mData1 );
 
     const int colorNumericBufferLength = 8;
-    char redString[ colorNumericBufferLength ], greenString[ colorNumericBufferLength ], blueString[ colorNumericBufferLength ];
+    char redString[ colorNumericBufferLength ], greenString[ colorNumericBufferLength ], blueString[ colorNumericBufferLength ],
+            whiteString[ colorNumericBufferLength ];
 
-    GenerateRGBStrings( rgb, display_base, colorNumericBufferLength, redString, greenString, blueString );
+    GenerateRGBStrings( rgb, display_base, colorNumericBufferLength, redString, greenString, blueString, whiteString );
 
     // target content: [13] 0x1A, 0x2B, 0x3C
     char buf[ 64 ];
-    ::snprintf( buf, 64, "[%d] %s, %s, %s", ledIndex, redString, greenString, blueString );
+    if( mSettings->GetColorLayout() == LAYOUT_GRBW )
+    {
+        ::snprintf( buf, 64, "[%d] %s, %s, %s, %s", ledIndex, redString, greenString, blueString, whiteString );
+    }
+    else
+    {
+        ::snprintf( buf, 64, "[%d] %s, %s, %s", ledIndex, redString, greenString, blueString );
+    }
     AddTabularText( buf );
 #endif
 }
