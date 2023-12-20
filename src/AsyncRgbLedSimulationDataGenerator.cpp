@@ -60,7 +60,7 @@ U32 AsyncRgbLedSimulationDataGenerator::GenerateSimulationData( U64 largest_samp
     {
         WriteReset();
 
-        // six RGB-triple cascade between resets, i.e six discrete LEDs
+        // six RGB-tuple cascade between resets, i.e six discrete LEDs
         // or two of the 3-LED combined drivers. We could perhaps make
         // this adjustable
         for( int t = 0; t < 6; ++t )
@@ -84,15 +84,16 @@ U32 AsyncRgbLedSimulationDataGenerator::GenerateSimulationData( U64 largest_samp
 void AsyncRgbLedSimulationDataGenerator::CreateRGBWord()
 {
     const RGBValue rgb = RandomRGBValue();
-    WriteRGBTriple( rgb );
+    WriteRGBTuple( rgb );
 }
 
-void AsyncRgbLedSimulationDataGenerator::WriteRGBTriple( const RGBValue& rgb )
+void AsyncRgbLedSimulationDataGenerator::WriteRGBTuple( const RGBValue& rgb )
 {
-    U16 values[ 3 ];
+    U16 values[ 4 ];
     rgb.ConvertToControllerOrder( mSettings->GetColorLayout(), values );
 
-    for( int i = 0; i < 3; ++i )
+    const int tuples = mSettings->GetColorLayout()==LAYOUT_GRBW? 4: 3;
+    for( int i = 0; i < tuples; ++i )
     {
         WriteUIntData( values[ i ], mSettings->BitSize() );
     }
@@ -137,5 +138,6 @@ RGBValue AsyncRgbLedSimulationDataGenerator::RandomRGBValue() const
     const U16 red = rand() % mMaximumChannelValue;
     const U16 green = rand() % mMaximumChannelValue;
     const U16 blue = rand() % mMaximumChannelValue;
-    return RGBValue{ red, green, blue };
+    const U16 white = rand() % mMaximumChannelValue;
+    return RGBValue{ red, green, blue, white };
 }
