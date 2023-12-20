@@ -53,7 +53,7 @@ class AsyncRgbLedAnalyzer : public Analyzer2
         U64 mValueEndSample = 0;
     };
 
-    RGBResult ReadRGBTriple();
+    RGBResult ReadRGBTuple();
 
     struct ReadResult
     {
