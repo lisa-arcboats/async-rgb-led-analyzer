@@ -76,10 +76,7 @@ void AsyncRgbLedAnalyzer::WorkerThread()
                 frame_v2.AddInteger( "red", result.mRGB.red );
                 frame_v2.AddInteger( "green", result.mRGB.green );
                 frame_v2.AddInteger( "blue", result.mRGB.blue );
-                if ( mSettings->GetColorLayout() == LAYOUT_GRBW )
-                {
-                    frame_v2.AddInteger( "white", result.mRGB.white ); // TODO: Make this conditional
-                }
+                frame_v2.AddInteger( "white", result.mRGB.white ); // mSettings->GetColorLayout() can't be used here seemingly
                 mResults->AddFrameV2( frame_v2, "pixel", frame.mStartingSampleInclusive, frame.mEndingSampleInclusive );
 
                 mResults->CommitResults();
