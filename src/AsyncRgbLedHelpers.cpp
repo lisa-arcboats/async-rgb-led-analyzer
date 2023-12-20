@@ -29,6 +29,14 @@ void RGBValue::ConvertToControllerOrder( ColorLayout layout, U16* values ) const
         values[ 2 ] = blue;
         break;
     }
+
+    case LAYOUT_GRBW:
+        values[ 0 ] = green;
+        values[ 1 ] = red;
+        values[ 2 ] = blue;
+        values[ 3 ] = white;
+        break;
+    }
 }
 
 RGBValue RGBValue::CreateFromControllerOrder( ColorLayout layout, U16* values )
@@ -40,6 +48,9 @@ RGBValue RGBValue::CreateFromControllerOrder( ColorLayout layout, U16* values )
 
     case LAYOUT_RGB:
         return RGBValue{ values[ 0 ], values[ 1 ], values[ 2 ] };
+        
+    case LAYOUT_GRBW:
+        return RGBValue{ values[ 1 ], values[ 0 ], values[ 2 ], values[ 3 ] };
     }
 }
 
@@ -67,4 +78,8 @@ void RGBValue::ConvertTo8Bit( U8 bitSize, U8* values ) const
     values[ 0 ] = static_cast<U8>( red >> ( bitSize - 8 ) );
     values[ 1 ] = static_cast<U8>( green >> ( bitSize - 8 ) );
     values[ 2 ] = static_cast<U8>( blue >> ( bitSize - 8 ) );
+    if ( layout == LAYOUT_GRBW )
+    {
+        values[ 3 ] = static_cast<U8>( white >> ( bitSize - 8 ) );
+    }
 }
