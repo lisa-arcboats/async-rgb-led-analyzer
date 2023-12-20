@@ -78,8 +78,5 @@ void RGBValue::ConvertTo8Bit( U8 bitSize, U8* values ) const
     values[ 0 ] = static_cast<U8>( red >> ( bitSize - 8 ) );
     values[ 1 ] = static_cast<U8>( green >> ( bitSize - 8 ) );
     values[ 2 ] = static_cast<U8>( blue >> ( bitSize - 8 ) );
-    if ( layout == LAYOUT_GRBW )
-    {
-        values[ 3 ] = static_cast<U8>( white >> ( bitSize - 8 ) );
-    }
+    values[ 3 ] = static_cast<U8>( white >> ( bitSize - 8 ) );
 }
