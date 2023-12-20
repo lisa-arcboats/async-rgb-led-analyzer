@@ -188,6 +188,21 @@ void AsyncRgbLedAnalyzerSettings::InitControllerData()
           false,
           { {}, {} },
           LAYOUT_RGB },
+        
+        // https://www.digikey.com/htmldatasheets/production/1857559/0/0/1/SK6812RGBW-Specification.pdf
+        { "SK6812RGBW",
+          "DONGGUANG OPSCO OPTOELECTRONICS CO., LTD",
+          8,
+          4,
+          { 50_us, 50_us, 50_us },
+          {
+              // low-speed times
+              { { 200_ns, 400_ns, 550_ns }, { 700_ns, 850_ns, 1050_ns } }, // 0-bit times
+              { { 650_ns, 800_ns, 1050_ns }, { 200_ns, 450_ns, 600_ns } }, // 1-bit times
+          },
+          false,
+          { {}, {} },
+          LAYOUT_GRBW },
     };
 }
 
