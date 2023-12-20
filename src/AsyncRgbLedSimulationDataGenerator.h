@@ -25,7 +25,7 @@ class AsyncRgbLedSimulationDataGenerator
     void CreateRGBWord();
     RGBValue RandomRGBValue() const;
 
-    void WriteRGBTriple( const RGBValue& rgb );
+    void WriteRGBTuple( const RGBValue& rgb );
     void WriteUIntData( U16 data, U8 bit_count );
     void WriteBit( bool b );
 
