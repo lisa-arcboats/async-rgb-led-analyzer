@@ -137,10 +137,10 @@ auto AsyncRgbLedAnalyzer::ReadRGBTuple() -> RGBResult
     RGBResult result;
 
     DataBuilder builder;
-    const int channels = mSettings->GetColorLayout()==LAYOUT_GRBW? 4: 3;
+    const int nch = mSettings->GetColorLayout()==LAYOUT_GRBW? 4: 3;
     int channel = 0;
 
-    for( ; channel < channels; )
+    for( ; channel < nch; )
     {
         U64 value = 0;
         builder.Reset( &value, AnalyzerEnums::MsbFirst, bitSize );
@@ -179,7 +179,7 @@ auto AsyncRgbLedAnalyzer::ReadRGBTuple() -> RGBResult
         }
     }
 
-    if( channel == channels )
+    if( channel == nch )
     {
         // we saw three (or four) complete channels, we can use this
         result.mRGB = RGBValue::CreateFromControllerOrder( mSettings->GetColorLayout(), channels );
@@ -365,12 +365,12 @@ U32 AsyncRgbLedAnalyzer::GetMinimumSampleRateHz()
 
 const char* AsyncRgbLedAnalyzer::GetAnalyzerName() const
 {
-    return "Addressable LEDs (Async)";
+    return "Addressable LEDs (Async) incl RGBW";
 }
 
 const char* GetAnalyzerName()
 {
-    return "Addressable LEDs (Async)";
+    return "Addressable LEDs (Async) incl RGBW";
 }
 
 Analyzer* CreateAnalyzer()

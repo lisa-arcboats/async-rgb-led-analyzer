@@ -28,7 +28,6 @@ void RGBValue::ConvertToControllerOrder( ColorLayout layout, U16* values ) const
         values[ 1 ] = green;
         values[ 2 ] = blue;
         break;
-    }
 
     case LAYOUT_GRBW:
         values[ 0 ] = green;
