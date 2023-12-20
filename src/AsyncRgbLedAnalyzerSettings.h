@@ -35,7 +35,8 @@ class AsyncRgbLedAnalyzerSettings : public AnalyzerSettings
         LED_TM1804,
         LED_UCS1903,
         LED_LPD1886_8bit,
-        LED_LPD1886_12bit
+        LED_LPD1886_12bit,
+        LED_SK6812_RGBW
     };
 
     Controller mLEDController = LED_WS2811;
