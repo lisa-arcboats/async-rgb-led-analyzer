@@ -120,6 +120,9 @@ The built analyzer DLLs will be located here:
 
 For debug and release builds, respectively.
 
+# Importing Low Level Analyzer to Logic 2
+Go to Edit > Settings and scroll down to "Custom Low Level Analyzers".
+Enter the directory where *.sal files are stored (a *.sal file should have been created after completing the build steps above)
 
 ## Output Frame Format
   
