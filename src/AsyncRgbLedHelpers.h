@@ -6,7 +6,8 @@
 enum ColorLayout
 {
     LAYOUT_RGB = 0,
-    LAYOUT_GRB
+    LAYOUT_GRB,
+    LAYOUT_GRBW
 };
 
 struct RGBValue
@@ -14,7 +15,7 @@ struct RGBValue
     RGBValue() = default;
     ~RGBValue() = default;
 
-    RGBValue( U16 r, U16 g, U16 b ) : red( r ), green( g ), blue( b )
+    RGBValue( U16 r, U16 g, U16 b, U16 w = 0 ) : red( r ), green( g ), blue( b ), white (w)
     {
         ;
     }
@@ -22,7 +23,7 @@ struct RGBValue
     U16 red = 0;
     U16 green = 0;
     U16 blue = 0;
-    U16 padding = 0; // no alpha in LED colors
+    U16 white = 0;
 
     void ConvertToControllerOrder( ColorLayout layout, U16* values ) const;
 
@@ -33,10 +34,10 @@ struct RGBValue
     U64 ConvertToU64() const;
 
     /**
-     * @brief ConvertTo8Bit - adjust precision to three 8-bit values compatible
+     * @brief ConvertTo8Bit - adjust precision to four 8-bit values compatible
      * witha  web / CSS color specification.
-     * @param bitSize - bits used in this RGB value, eg 8, 10, 12 or 16
-     * @param values - array of three U8s to store output web color value
+     * @param bitSize - bits used in this RGBW value, eg 8, 10, 12 or 16
+     * @param values - array of four U8s to store output web color value
      */
     void ConvertTo8Bit( U8 bitSize, U8* values ) const;
 };

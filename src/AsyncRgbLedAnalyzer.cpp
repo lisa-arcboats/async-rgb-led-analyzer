@@ -59,7 +59,7 @@ void AsyncRgbLedAnalyzer::WorkerThread()
         // data word reading loop
         for( ;; )
         {
-            auto result = ReadRGBTriple();
+            auto result = ReadRGBTuple();
 
             if( result.mValid )
             {
@@ -76,6 +76,7 @@ void AsyncRgbLedAnalyzer::WorkerThread()
                 frame_v2.AddInteger( "red", result.mRGB.red );
                 frame_v2.AddInteger( "green", result.mRGB.green );
                 frame_v2.AddInteger( "blue", result.mRGB.blue );
+                frame_v2.AddInteger( "white", result.mRGB.white ); // mSettings->GetColorLayout() can't be used here seemingly
                 mResults->AddFrameV2( frame_v2, "pixel", frame.mStartingSampleInclusive, frame.mEndingSampleInclusive );
 
                 mResults->CommitResults();
@@ -126,16 +127,17 @@ void AsyncRgbLedAnalyzer::SynchronizeToReset()
     }
 }
 
-auto AsyncRgbLedAnalyzer::ReadRGBTriple() -> RGBResult
+auto AsyncRgbLedAnalyzer::ReadRGBTuple() -> RGBResult
 {
     const U8 bitSize = mSettings->BitSize();
-    U16 channels[ 3 ] = { 0, 0, 0 };
+    U16 channels[ 4 ] = { 0, 0, 0, 0 };
     RGBResult result;
 
     DataBuilder builder;
+    const int nch = mSettings->GetColorLayout()==LAYOUT_GRBW? 4: 3;
     int channel = 0;
 
-    for( ; channel < 3; )
+    for( ; channel < nch; )
     {
         U64 value = 0;
         builder.Reset( &value, AnalyzerEnums::MsbFirst, bitSize );
@@ -174,9 +176,9 @@ auto AsyncRgbLedAnalyzer::ReadRGBTriple() -> RGBResult
         }
     }
 
-    if( channel == 3 )
+    if( channel == nch )
     {
-        // we saw three complete channels, we can use this
+        // we saw three (or four) complete channels, we can use this
         result.mRGB = RGBValue::CreateFromControllerOrder( mSettings->GetColorLayout(), channels );
         result.mValid = true;
     } // in all other cases, mValid stays false - no RGB data was written
@@ -360,12 +362,12 @@ U32 AsyncRgbLedAnalyzer::GetMinimumSampleRateHz()
 
 const char* AsyncRgbLedAnalyzer::GetAnalyzerName() const
 {
-    return "Addressable LEDs (Async)";
+    return "Addressable LEDs (Async) incl RGBW";
 }
 
 const char* GetAnalyzerName()
 {
-    return "Addressable LEDs (Async)";
+    return "Addressable LEDs (Async) incl RGBW";
 }
 
 Analyzer* CreateAnalyzer()
